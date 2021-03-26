@@ -24,6 +24,30 @@ public class FfmpegConsoleWrapperService {
         parameters.add("ffmpeg");
     }
 
+    public File rotateVideo90Degree(File video, String resultingVideoName) throws IOException, InterruptedException {
+        File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".ts");
+        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        Process start = rotateVideo90Degree(video);
+        if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
+            throw new RuntimeException("Something went wrong while rotating video.");
+        }
+        return resultingFile;
+    }
+
+    private Process rotateVideo90Degree(File video) throws IOException {
+        parameters.add("-i");
+        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add("-vf");
+        parameters.add("\"transpose=1\"");
+        parameters.add(resultVideoParam);
+
+        processBuilder.command(parameters);
+
+        Process start = processBuilder.start();
+        init();
+        return start;
+    }
+
     public File reEncodeTo1080p(File video, String resultingVideoName) throws IOException, InterruptedException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".ts");
         resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
