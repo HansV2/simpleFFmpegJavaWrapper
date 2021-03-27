@@ -62,8 +62,8 @@ public class FfmpegConsoleWrapperService {
     private Process reScaleVideoAsync(File video, int width, int height) throws IOException {
         parameters.add("-i");
         parameters.add("\"" + video.getAbsolutePath() + "\"");
-        parameters.add("-vf");
-        parameters.add("scale=w=" + width + ":h=" + height + ":force_original_aspect_ratio=decrease,pad=" + width + ":" + height + ":-1:-1:color=black");
+        parameters.add("-filter_complex");
+        parameters.add("[0]scale=w=" + width + ":h=" + height + ",setsar=1,boxblur=20:20[b];[0]scale=" + width + ":-1:force_original_aspect_ratio=decrease[v];[b][v]overlay=(W-w)/2:(H-h)/2");
         parameters.add(resultVideoParam);
 
         processBuilder.command(parameters);
