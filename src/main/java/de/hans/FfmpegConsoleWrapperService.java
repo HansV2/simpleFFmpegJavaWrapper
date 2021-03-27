@@ -50,6 +50,29 @@ public class FfmpegConsoleWrapperService {
         return start;
     }
 
+    public File rescaleVideo(File video, File resultingFile, int width, int height) throws IOException, InterruptedException {
+        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        Process start = reScaleVideoAsync(video, width, height);
+        if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
+            throw new RuntimeException("Something went wrong while rotating video.");
+        }
+        return resultingFile;
+    }
+
+    private Process reScaleVideoAsync(File video, int width, int height) throws IOException {
+        parameters.add("-i");
+        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add("-vf");
+        parameters.add("scale=w=" + width + ":h=" + height + ":force_original_aspect_ratio=decrease,pad=" + width + ":" + height + ":-1:-1:color=black");
+        parameters.add(resultVideoParam);
+
+        processBuilder.command(parameters);
+
+        Process start = processBuilder.start();
+        init();
+        return start;
+    }
+
     public File reEncodeTo1080p(File video, String resultingVideoName) throws IOException, InterruptedException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".ts");
         resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
