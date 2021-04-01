@@ -44,11 +44,7 @@ public class FfprobeConsoleWrapperService {
     private int getAsMilliseconds(String time) {
         String[] split = time.split("\\.");
         int seconds = Integer.parseInt(split[0]);
-        int milliseconds = 0;
-        if(split[1].length() > 0){
-            milliseconds =Integer.parseInt(split[1].replaceAll("0+$", ""));
-        }
-        return seconds * 1000 + milliseconds;
+        return seconds * 1000;
     }
 
     private Process getVideoContainerLengthInSecondsAsync(File video) throws IOException {
