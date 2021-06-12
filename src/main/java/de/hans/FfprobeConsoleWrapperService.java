@@ -23,7 +23,7 @@ public class FfprobeConsoleWrapperService {
         parameters.add("ffprobe");
     }
 
-    public long getVideoContainerLengthInMilliseconds(File video) throws IOException, InterruptedException, ParseException {
+    public long getContainerLengthInMilliseconds(File video) throws IOException, InterruptedException, ParseException {
         Process start = getVideoContainerLengthInSecondsAsync(video);
         InputStream is = start.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));

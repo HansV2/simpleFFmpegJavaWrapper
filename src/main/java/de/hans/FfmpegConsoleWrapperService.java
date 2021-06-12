@@ -3,6 +3,7 @@ package de.hans;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -132,6 +133,56 @@ public class FfmpegConsoleWrapperService {
         parameters.add("scale=w=" + width + ":h=" + height + ":force_original_aspect_ratio=decrease,pad=" + width + ":" + height + ":-1:-1:color=black");
         parameters.add("-f");
         parameters.add("mpegts");
+        parameters.add(resultVideoParam);
+
+        processBuilder.command(parameters);
+
+        Process start = processBuilder.start();
+        init();
+        return start;
+    }
+
+
+    /**
+     * keeps video audio and overlays given audio.
+     * Cuts audio if it's longer than video.
+     *
+     * @param video
+     * @param audio
+     * @param resultingVideoName
+     * @param newVolumeOfAudio
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ParseException
+     */
+    public File mergeAudioOntoVideo(File video, File audio, String resultingVideoName, Double newVolumeOfAudio) throws IOException, InterruptedException, ParseException {
+        File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".mp4");
+        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+
+        Process start = mergeAudioOntoVideoAsync(video, audio, newVolumeOfAudio);
+        if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
+            throw new RuntimeException("Something went wrong while adding audio to video.");
+        }
+        return resultingFile;
+    }
+
+    private Process mergeAudioOntoVideoAsync(File video, File audio, Double newVolumeOfAudio) throws IOException, ParseException, InterruptedException {
+        parameters.add("-i");
+        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add("-i");
+        parameters.add("\"" + audio.getAbsolutePath() + "\"");
+        parameters.add("-filter_complex");
+        parameters.add("\"[1:a]volume=" + newVolumeOfAudio + "[ava];[ava]apad[al];[0:a][al]amerge=inputs=2[a]\"");
+        parameters.add("-map");
+        parameters.add("0:v");
+        parameters.add("-map");
+        parameters.add("\"[a]\"");
+        parameters.add("-c:v");
+        parameters.add("copy");
+        parameters.add("-ac");
+        parameters.add("2");
+        parameters.add("-shortest");
         parameters.add(resultVideoParam);
 
         processBuilder.command(parameters);
