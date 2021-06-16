@@ -13,9 +13,11 @@ public class FfmpegConsoleWrapperService {
     private ProcessBuilder processBuilder;
     private String resultVideoParam;
     private String pathToOutputDir;
+    private final boolean silent;
 
-    public FfmpegConsoleWrapperService(String pathToOutputDir) {
+    public FfmpegConsoleWrapperService(String pathToOutputDir, boolean silent) {
         this.pathToOutputDir = pathToOutputDir;
+        this.silent = silent;
         init();
     }
 
@@ -25,6 +27,10 @@ public class FfmpegConsoleWrapperService {
         parameters.add("cmd");
         parameters.add("/c");
         parameters.add("ffmpeg");
+        if(silent){
+            parameters.add("-loglevel");
+            parameters.add("quiet");
+        }
     }
 
     public File rotateVideo90Degree(File video, String resultingVideoName) throws IOException, InterruptedException {

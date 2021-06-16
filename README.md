@@ -1,2 +1,4 @@
 # simpleFFmpegJavaWrapper
-simple wrapper for ffmpeg only usable on Windows.
+simple wrapper for ffmpeg made for Windows.<br/>
+Prerequisit:
+ffmpeg in %PATH%
