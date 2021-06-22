@@ -1,5 +1,7 @@
 package de.hans;
 
+import com.sun.javafx.PlatformUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,8 +26,10 @@ public class FfmpegConsoleWrapperService {
     private void init() {
         processBuilder = new ProcessBuilder().inheritIO();
         parameters = new ArrayList<String>();
-        parameters.add("cmd");
-        parameters.add("/c");
+        if(PlatformUtil.isWindows()){
+            parameters.add("cmd");
+            parameters.add("/c");
+        }
         parameters.add("ffmpeg");
         if(silent){
             parameters.add("-loglevel");

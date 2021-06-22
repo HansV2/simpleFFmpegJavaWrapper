@@ -1,5 +1,7 @@
 package de.hans;
 
+import com.sun.javafx.PlatformUtil;
+
 import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -18,8 +20,11 @@ public class FfprobeConsoleWrapperService {
         ProcessBuilder.Redirect redirected;
         processBuilder = new ProcessBuilder();
         parameters = new ArrayList<String>();
-        parameters.add("cmd");
-        parameters.add("/c");
+        if(PlatformUtil.isWindows()){
+            parameters.add("cmd");
+            parameters.add("/c");
+        }
+
         parameters.add("ffprobe");
     }
 
