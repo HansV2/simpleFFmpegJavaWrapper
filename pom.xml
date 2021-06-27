@@ -6,7 +6,7 @@
 
     <groupId>de.hans</groupId>
     <artifactId>simpleFFmpegJavaWrapper</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.7-SNAPSHOT</version>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>

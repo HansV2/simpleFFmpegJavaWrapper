@@ -9,6 +9,8 @@ import java.util.List;
 
 public class FfprobeConsoleWrapperService {
 
+    private static final String PATH_ENCLOSURE = System.getProperty("os.name").toLowerCase().contains("win") ? "\"" : "";
+
     private List<String> parameters;
     private ProcessBuilder processBuilder;
 
@@ -20,7 +22,7 @@ public class FfprobeConsoleWrapperService {
         ProcessBuilder.Redirect redirected;
         processBuilder = new ProcessBuilder();
         parameters = new ArrayList<String>();
-        if(PlatformUtil.isWindows()){
+        if(System.getProperty("os.name").toLowerCase().contains("win")){
             parameters.add("cmd");
             parameters.add("/c");
         }
@@ -59,7 +61,7 @@ public class FfprobeConsoleWrapperService {
         parameters.add("format=duration");
         parameters.add("-of");
         parameters.add("default=noprint_wrappers=1:nokey=1");
-        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + video.getAbsolutePath() + PATH_ENCLOSURE);
 
         processBuilder.command(parameters);
 

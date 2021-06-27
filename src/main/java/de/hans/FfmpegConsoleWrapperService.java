@@ -1,7 +1,5 @@
 package de.hans;
 
-import com.sun.javafx.PlatformUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,11 +9,12 @@ import java.util.List;
 
 public class FfmpegConsoleWrapperService {
 
+    private static final String PATH_ENCLOSURE = System.getProperty("os.name").toLowerCase().contains("win") ? "\"" : "";
+    private final String pathToOutputDir;
+    private final boolean silent;
     private List<String> parameters;
     private ProcessBuilder processBuilder;
     private String resultVideoParam;
-    private String pathToOutputDir;
-    private final boolean silent;
 
     public FfmpegConsoleWrapperService(String pathToOutputDir, boolean silent) {
         this.pathToOutputDir = pathToOutputDir;
@@ -26,12 +25,14 @@ public class FfmpegConsoleWrapperService {
     private void init() {
         processBuilder = new ProcessBuilder().inheritIO();
         parameters = new ArrayList<String>();
-        if(PlatformUtil.isWindows()){
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
             parameters.add("cmd");
             parameters.add("/c");
         }
         parameters.add("ffmpeg");
-        if(silent){
+        parameters.add("-vsync");
+        parameters.add("0");
+        if (silent) {
             parameters.add("-loglevel");
             parameters.add("quiet");
         }
@@ -39,7 +40,7 @@ public class FfmpegConsoleWrapperService {
 
     public File rotateVideo90Degree(File video, String resultingVideoName) throws IOException, InterruptedException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".ts");
-        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        resultVideoParam = PATH_ENCLOSURE + resultingFile.getAbsolutePath() + PATH_ENCLOSURE;
         Process start = rotateVideo90Degree(video);
         if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
             throw new RuntimeException("Something went wrong while rotating video.");
@@ -49,7 +50,7 @@ public class FfmpegConsoleWrapperService {
 
     private Process rotateVideo90Degree(File video) throws IOException {
         parameters.add("-i");
-        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + video.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-vf");
         parameters.add("\"transpose=1\"");
         parameters.add(resultVideoParam);
@@ -62,7 +63,7 @@ public class FfmpegConsoleWrapperService {
     }
 
     public File rescaleVideo(File video, File resultingFile, int width, int height) throws IOException, InterruptedException {
-        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        resultVideoParam = PATH_ENCLOSURE + resultingFile.getAbsolutePath() + PATH_ENCLOSURE;
         Process start = reScaleVideoAsync(video, width, height);
         if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
             throw new RuntimeException("Something went wrong while rotating video.");
@@ -72,7 +73,7 @@ public class FfmpegConsoleWrapperService {
 
     private Process reScaleVideoAsync(File video, int width, int height) throws IOException {
         parameters.add("-i");
-        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + video.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-filter_complex");
         parameters.add("[0]scale=w=" + width + ":h=" + height + ",setsar=1,boxblur=20:20[b];[0]scale=" + width + ":-1:force_original_aspect_ratio=decrease[v];[b][v]overlay=(W-w)/2:(H-h)/2");
         parameters.add(resultVideoParam);
@@ -86,7 +87,7 @@ public class FfmpegConsoleWrapperService {
 
     public File reEncodeTo1080p(File video, String resultingVideoName) throws IOException, InterruptedException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".ts");
-        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        resultVideoParam = PATH_ENCLOSURE + resultingFile.getAbsolutePath() + PATH_ENCLOSURE;
         Process start = reEncodeTo1080pAsync(video);
         if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
             throw new RuntimeException("Something went wrong while re-encoding video to 1080p.");
@@ -96,7 +97,7 @@ public class FfmpegConsoleWrapperService {
 
     private Process reEncodeTo1080pAsync(File video) throws IOException {
         parameters.add("-i");
-        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + video.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-vf");
         parameters.add("scale=-1:1080");
         parameters.add("-c:v");
@@ -118,7 +119,7 @@ public class FfmpegConsoleWrapperService {
 
     public File mergeImageWithAudio(File image, File audio, String resultingVideoName, int width, int height) throws IOException, InterruptedException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".ts");
-        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        resultVideoParam = PATH_ENCLOSURE + resultingFile.getAbsolutePath() + PATH_ENCLOSURE;
         Process start = mergeImageWithAudioAsync(image, audio, width, height);
         if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
             throw new RuntimeException("Something went wrong while merging audio with image.");
@@ -133,9 +134,9 @@ public class FfmpegConsoleWrapperService {
         parameters.add("-r");
         parameters.add("1");
         parameters.add("-i");
-        parameters.add("\"" + image.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + image.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-i");
-        parameters.add("\"" + audio.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + audio.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-c:a");
         parameters.add("copy");
         parameters.add("-shortest");
@@ -168,7 +169,7 @@ public class FfmpegConsoleWrapperService {
      */
     public File mergeAudioOntoVideo(File video, File audio, String resultingVideoName, Double newVolumeOfAudio) throws IOException, InterruptedException, ParseException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".mp4");
-        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        resultVideoParam = PATH_ENCLOSURE + resultingFile.getAbsolutePath() + PATH_ENCLOSURE;
 
         Process start = mergeAudioOntoVideoAsync(video, audio, newVolumeOfAudio);
         if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
@@ -179,9 +180,9 @@ public class FfmpegConsoleWrapperService {
 
     private Process mergeAudioOntoVideoAsync(File video, File audio, Double newVolumeOfAudio) throws IOException, ParseException, InterruptedException {
         parameters.add("-i");
-        parameters.add("\"" + video.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + video.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-i");
-        parameters.add("\"" + audio.getAbsolutePath() + "\"");
+        parameters.add(PATH_ENCLOSURE + audio.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-filter_complex");
         parameters.add("\"[1:a]volume=" + newVolumeOfAudio + "[ava];[ava]apad[al];[0:a][al]amerge=inputs=2[a]\"");
         parameters.add("-map");
@@ -202,9 +203,19 @@ public class FfmpegConsoleWrapperService {
         return start;
     }
 
+    /**
+     * All files need have the same number of streams.
+     * I.e. all files need to have audio and video or all files need to have video and no audio.
+     *
+     * @param files
+     * @param resultingVideoName Name without file-extension.
+     * @return files concatenated in mp4-format.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public File concatVideos(List<File> files, String resultingVideoName) throws IOException, InterruptedException {
         File resultingFile = new File(pathToOutputDir + "/" + resultingVideoName + ".mp4");
-        resultVideoParam = "\"" + resultingFile.getAbsolutePath() + "\"";
+        resultVideoParam = PATH_ENCLOSURE + resultingFile.getAbsolutePath() + PATH_ENCLOSURE;
         Process start = concatVideosAsync(files);
         if (start.waitFor() != 0 || !isValidFile(resultingFile)) {
             throw new RuntimeException("Something went wrong while concattenating videos.");
@@ -215,32 +226,33 @@ public class FfmpegConsoleWrapperService {
     private Process concatVideosAsync(List<File> files) throws IOException {
         StringBuffer stringBuffer = new StringBuffer();
 
-        parameters.add("-i");
+        files.forEach(file -> {
+            parameters.add("-i");
+            parameters.add(PATH_ENCLOSURE + file.getAbsolutePath() + PATH_ENCLOSURE);
+        });
 
-        stringBuffer.append("\"concat:");
+        parameters.add("-filter_complex");
+
+        stringBuffer.append("\"");
         for (int i = 0; i < files.size(); i++) {
-            File file = files.get(i);
-            stringBuffer.append(file.getAbsolutePath());
-            if (i != files.size() - 1) {
-                stringBuffer.append("|");
-            }
+            stringBuffer.append("[" + i + ":v:0][" + i + ":a:0]");
 
         }
-        stringBuffer.append("\"");
+        stringBuffer.append("concat=n=" + files.size() + ":v=1:a=1[outv][outa]\"");
         parameters.add(stringBuffer.toString());
-        parameters.add("-c");
-        parameters.add("copy");
+        parameters.add("-map");
+        parameters.add("\"[outv]\"");
+        parameters.add("-map");
+        parameters.add("\"[outa]\"");
         parameters.add(resultVideoParam);
 
         processBuilder.command(parameters);
-
         Process start = processBuilder.start();
         init();
         return start;
     }
 
     private boolean isValidFile(File resultingFile) throws IOException {
-        boolean validFile = resultingFile.exists() && Files.size(resultingFile.toPath()) > 0;
-        return validFile;
+        return resultingFile.exists() && Files.size(resultingFile.toPath()) > 0;
     }
 }
