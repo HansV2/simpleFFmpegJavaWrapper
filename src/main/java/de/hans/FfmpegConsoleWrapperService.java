@@ -52,7 +52,7 @@ public class FfmpegConsoleWrapperService {
         parameters.add("-i");
         parameters.add(PATH_ENCLOSURE + video.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-vf");
-        parameters.add("\"transpose=1\"");
+        parameters.add("transpose=1");
         parameters.add(resultVideoParam);
 
         processBuilder.command(parameters);
@@ -184,11 +184,11 @@ public class FfmpegConsoleWrapperService {
         parameters.add("-i");
         parameters.add(PATH_ENCLOSURE + audio.getAbsolutePath() + PATH_ENCLOSURE);
         parameters.add("-filter_complex");
-        parameters.add("\"[1:a]volume=" + newVolumeOfAudio + "[ava];[ava]apad[al];[0:a][al]amerge=inputs=2[a]\"");
+        parameters.add("[1:a]volume=" + newVolumeOfAudio + "[ava];[ava]apad[al];[0:a][al]amerge=inputs=2[a]");
         parameters.add("-map");
         parameters.add("0:v");
         parameters.add("-map");
-        parameters.add("\"[a]\"");
+        parameters.add("[a]");
         parameters.add("-c:v");
         parameters.add("copy");
         parameters.add("-ac");
@@ -233,17 +233,16 @@ public class FfmpegConsoleWrapperService {
 
         parameters.add("-filter_complex");
 
-        stringBuffer.append("\"");
         for (int i = 0; i < files.size(); i++) {
             stringBuffer.append("[" + i + ":v:0][" + i + ":a:0]");
 
         }
-        stringBuffer.append("concat=n=" + files.size() + ":v=1:a=1[outv][outa]\"");
+        stringBuffer.append("concat=n=" + files.size() + ":v=1:a=1[outv][outa]");
         parameters.add(stringBuffer.toString());
         parameters.add("-map");
-        parameters.add("\"[outv]\"");
+        parameters.add("[outv]");
         parameters.add("-map");
-        parameters.add("\"[outa]\"");
+        parameters.add("[outa]");
         parameters.add(resultVideoParam);
 
         processBuilder.command(parameters);
